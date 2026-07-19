@@ -4,9 +4,9 @@ import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 import { defineConfig, fontProviders } from 'astro/config';
 
-// https://astro.build/config
 export default defineConfig({
 	site: 'https://www.lindseybonnetterpgpublishing.com',
+	output: 'static', // Ensure static output for GitHub Pages
 	integrations: [mdx(), sitemap()],
 	fonts: [
 		{
