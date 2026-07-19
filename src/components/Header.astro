@@ -1,0 +1,173 @@
+---
+import { SITE_TITLE, EXTERNAL_LINKS, NAV_LINKS } from '../consts';
+import HeaderLink from './HeaderLink.astro';
+import SocialIcon from './SocialIcon.astro';
+---
+
+<header>
+	<nav class="container" aria-label="Primary">
+		<a class="wordmark" href="/">{SITE_TITLE}</a>
+
+		<button class="menu-toggle" aria-expanded="false" aria-controls="mobile-menu" aria-label="Open menu">
+			<span></span><span></span><span></span>
+		</button>
+
+		<div class="internal-links">
+			{NAV_LINKS.map((link) => <HeaderLink href={link.href}>{link.label}</HeaderLink>)}
+		</div>
+
+		<div class="social-links">
+			<a href={EXTERNAL_LINKS.itch} target="_blank" rel="noopener" title="itch.io" aria-label="Lindsey Bonnette on itch.io">
+				<SocialIcon name="itch" />
+			</a>
+			<a href={EXTERNAL_LINKS.drivethru} target="_blank" rel="noopener" title="DriveThruRPG" aria-label="Lindsey Bonnette on DriveThruRPG">
+				<SocialIcon name="drivethru" />
+			</a>
+			<a href={EXTERNAL_LINKS.mastodon} target="_blank" rel="me noopener" title="Mastodon" aria-label="Connect on Mastodon">
+				<SocialIcon name="mastodon" />
+			</a>
+		</div>
+	</nav>
+
+	<div class="mobile-menu" id="mobile-menu" hidden>
+		{NAV_LINKS.map((link) => <a href={link.href}>{link.label}</a>)}
+		<div class="mobile-social">
+			<a href={EXTERNAL_LINKS.itch} target="_blank" rel="noopener" aria-label="itch.io"><SocialIcon name="itch" size={28} /></a>
+			<a href={EXTERNAL_LINKS.drivethru} target="_blank" rel="noopener" aria-label="DriveThruRPG"><SocialIcon name="drivethru" size={28} /></a>
+			<a href={EXTERNAL_LINKS.mastodon} target="_blank" rel="me noopener" aria-label="Mastodon"><SocialIcon name="mastodon" size={28} /></a>
+		</div>
+	</div>
+</header>
+
+<style>
+	header {
+		position: sticky;
+		top: 0;
+		z-index: 100;
+		background: color-mix(in srgb, var(--color-bg) 85%, transparent);
+		backdrop-filter: blur(8px);
+		-webkit-backdrop-filter: blur(8px);
+		border-bottom: 1px solid var(--color-border);
+	}
+	nav {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-5);
+		min-height: 64px;
+	}
+	.wordmark {
+		font-family: var(--font-display);
+		font-weight: 600;
+		font-size: 1.35rem;
+		color: var(--color-text);
+		text-decoration: none;
+		line-height: 1.1;
+		max-width: 60%;
+	}
+	.wordmark:hover {
+		color: var(--color-accent);
+	}
+	.internal-links {
+		display: flex;
+		align-items: center;
+		gap: var(--space-5);
+		margin-left: auto;
+	}
+	.social-links {
+		display: flex;
+		align-items: center;
+		gap: var(--space-4);
+		padding-left: var(--space-5);
+		border-left: 1px solid var(--color-border);
+	}
+	.social-links a {
+		color: var(--color-text);
+		display: inline-flex;
+		transition: color var(--transition);
+	}
+	.social-links a:hover {
+		color: var(--color-accent);
+	}
+	.menu-toggle {
+		display: none;
+		flex-direction: column;
+		justify-content: center;
+		gap: 5px;
+		width: 40px;
+		height: 40px;
+		background: none;
+		border: none;
+		cursor: pointer;
+		padding: 8px;
+	}
+	.menu-toggle span {
+		display: block;
+		height: 2px;
+		width: 100%;
+		background: var(--color-text);
+		transition: transform var(--transition), opacity var(--transition);
+	}
+	.menu-toggle[aria-expanded='true'] span:nth-child(1) {
+		transform: translateY(7px) rotate(45deg);
+	}
+	.menu-toggle[aria-expanded='true'] span:nth-child(2) {
+		opacity: 0;
+	}
+	.menu-toggle[aria-expanded='true'] span:nth-child(3) {
+		transform: translateY(-7px) rotate(-45deg);
+	}
+	.mobile-menu {
+		display: none;
+	}
+
+	@media (max-width: 900px) {
+		.internal-links,
+		.social-links {
+			display: none;
+		}
+		.menu-toggle {
+			display: flex;
+		}
+		.mobile-menu {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: var(--space-5);
+			padding: var(--space-8) var(--gutter) var(--space-10);
+			border-bottom: 1px solid var(--color-border);
+			background: var(--color-overlay);
+		}
+		.mobile-menu[hidden] {
+			display: none;
+		}
+		.mobile-menu a {
+			font-family: var(--font-display);
+			font-size: var(--fs-h2);
+			color: var(--color-text);
+			text-decoration: none;
+		}
+		.mobile-menu a:hover {
+			color: var(--color-accent);
+		}
+		.mobile-social {
+			display: flex;
+			gap: var(--space-6);
+			margin-top: var(--space-4);
+		}
+		.mobile-social a {
+			color: var(--color-text-muted);
+		}
+	}
+</style>
+
+<script>
+	const toggle = document.querySelector('.menu-toggle');
+	const menu = document.getElementById('mobile-menu');
+	toggle?.addEventListener('click', () => {
+		const open = toggle.getAttribute('aria-expanded') === 'true';
+		toggle.setAttribute('aria-expanded', String(!open));
+		toggle.setAttribute('aria-label', open ? 'Open menu' : 'Close menu');
+		if (menu) menu.hidden = open;
+	});
+</script>

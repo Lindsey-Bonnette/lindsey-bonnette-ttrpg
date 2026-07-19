@@ -1,0 +1,85 @@
+---
+/*
+  A tiny monochrome genre glyph for a tag chip. Renders nothing for tags without
+  a mapped glyph (see tagGlyph in lib/tags). Inherits currentColor; decorative
+  (aria-hidden) — the tag's text label remains the accessible name.
+*/
+import { tagGlyph } from '../lib/tags';
+
+interface Props {
+	slug: string;
+	size?: number;
+}
+const { slug, size = 12 } = Astro.props;
+const glyph = tagGlyph(slug);
+---
+
+{
+	glyph && (
+		<svg
+			class="tag-glyph"
+			width={size}
+			height={size}
+			viewBox="0 0 24 24"
+			fill="none"
+			aria-hidden="true"
+			focusable="false"
+		>
+			{glyph === 'keyhole' && (
+				<>
+					<circle cx="12" cy="9" r="3.3" fill="currentColor" />
+					<path d="M9.4 12.2 8 18.5h8l-1.4-6.3Z" fill="currentColor" />
+				</>
+			)}
+			{glyph === 'star' && (
+				<path
+					d="M12 1.5 13.5 10 22 12 13.5 14 12 22.5 10.5 14 2 12 10.5 10Z"
+					fill="currentColor"
+				/>
+			)}
+			{glyph === 'moon' && (
+				<path
+					d="M15.5 2.5A9 9 0 1 0 21 18 7.2 7.2 0 0 1 15.5 2.5Z"
+					fill="currentColor"
+				/>
+			)}
+			{glyph === 'skull' && (
+				<path
+					fill-rule="evenodd"
+					clip-rule="evenodd"
+					d="M12 2.5C7.4 2.5 3.5 6 3.5 10.4c0 2.7 1.5 4.6 3.2 5.6V18a2 2 0 0 0 2 2H9v-2h1v2h1.4v-2h1.2v2H14v-2h1v2h.3a2 2 0 0 0 2-2v-2c1.7-1 3.2-2.9 3.2-5.6C20.5 6 16.6 2.5 12 2.5ZM8.7 9.3a1.7 1.7 0 1 1 0 3.4 1.7 1.7 0 0 1 0-3.4Zm6.6 0a1.7 1.7 0 1 1 0 3.4 1.7 1.7 0 0 1 0-3.4Z"
+					fill="currentColor"
+				/>
+			)}
+			{glyph === 'die' && (
+				<>
+					<rect
+						x="3.2"
+						y="3.2"
+						width="17.6"
+						height="17.6"
+						rx="4"
+						stroke="currentColor"
+						stroke-width="1.7"
+					/>
+					<circle cx="8" cy="8" r="1.5" fill="currentColor" />
+					<circle cx="12" cy="12" r="1.5" fill="currentColor" />
+					<circle cx="16" cy="16" r="1.5" fill="currentColor" />
+				</>
+			)}
+			{glyph === 'compass' && (
+				<>
+					<circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7" />
+					<path d="M12 12 15.5 7 12 17 9.5 13.5Z" fill="currentColor" />
+				</>
+			)}
+		</svg>
+	)
+}
+
+<style>
+	.tag-glyph {
+		flex: none;
+		opacity: 0.85;
+	}
+</style>

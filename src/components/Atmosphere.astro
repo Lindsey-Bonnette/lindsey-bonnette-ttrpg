@@ -1,0 +1,176 @@
+---
+/*
+  Atmosphere — the fixed, low-cost "lamplight" layer that sits behind all page
+  content (§3 of docs/DESIGN.md). Two treatments:
+    1. A large amber glow that very slowly breathes/drifts (living lamplight).
+    2. A handful of embers drifting upward, like sparks off a low fire.
+  Both are amber-only, pointer-events: none, and fully disabled under
+  prefers-reduced-motion (the static glow remains via global.css body).
+*/
+const EMBERS = [
+	{ left: '8%', size: 3, delay: '0s', dur: '19s', drift: '14px' },
+	{ left: '19%', size: 2, delay: '6s', dur: '23s', drift: '-10px' },
+	{ left: '31%', size: 4, delay: '11s', dur: '17s', drift: '18px' },
+	{ left: '44%', size: 2, delay: '3s', dur: '26s', drift: '-16px' },
+	{ left: '57%', size: 3, delay: '14s', dur: '21s', drift: '12px' },
+	{ left: '69%', size: 2, delay: '8s', dur: '25s', drift: '-12px' },
+	{ left: '81%', size: 4, delay: '2s', dur: '18s', drift: '16px' },
+	{ left: '92%', size: 3, delay: '16s', dur: '22s', drift: '-14px' },
+];
+---
+
+<div class="atmosphere" aria-hidden="true">
+	<div class="atmo-glow"></div>
+	<div class="atmo-stars"></div>
+	<div class="atmo-embers">
+		{
+			EMBERS.map((e) => (
+				<span
+					class="ember"
+					style={`--x:${e.left}; --size:${e.size}px; --delay:${e.delay}; --dur:${e.dur}; --drift:${e.drift};`}
+				/>
+			))
+		}
+	</div>
+</div>
+
+<style>
+	.atmosphere {
+		position: fixed;
+		inset: 0;
+		z-index: 0;
+		pointer-events: none;
+		overflow: hidden;
+		/* Static lamplight base (moved off body so it stays anchored on iOS,
+		   which ignores background-attachment: fixed). Survives
+		   prefers-reduced-motion since only child animations are disabled. */
+		background-image:
+			/* top-center lamplight */
+			radial-gradient(
+				125% 85% at 50% -12%,
+				color-mix(in srgb, var(--color-accent) 11%, transparent) 0%,
+				transparent 48%
+			),
+			/* warm side wash for depth */
+			radial-gradient(
+				90% 60% at 88% 4%,
+				color-mix(in srgb, var(--color-accent) 6%, transparent) 0%,
+				transparent 55%
+			),
+			/* low ember pool so the base is never a flat void */
+			radial-gradient(
+				120% 75% at 12% 108%,
+				color-mix(in srgb, var(--color-accent) 8%, transparent) 0%,
+				transparent 52%
+			);
+	}
+
+	/* Breathing lamplight — a soft amber bloom top-center that slowly drifts
+	   and pulses. Kept low-opacity so it reads as atmosphere, not a spotlight. */
+	.atmo-glow {
+		position: absolute;
+		top: -30vh;
+		left: 50%;
+		width: 120vw;
+		height: 100vh;
+		transform: translateX(-50%);
+		background: radial-gradient(
+			closest-side,
+			color-mix(in srgb, var(--color-accent) 16%, transparent) 0%,
+			color-mix(in srgb, var(--color-accent) 5%, transparent) 45%,
+			transparent 72%
+		);
+		filter: blur(24px);
+		opacity: 0.7;
+		animation: atmo-breathe 16s ease-in-out infinite alternate;
+	}
+
+	@keyframes atmo-breathe {
+		0% {
+			transform: translateX(-52%) scale(1);
+			opacity: 0.55;
+		}
+		100% {
+			transform: translateX(-48%) scale(1.12);
+			opacity: 0.8;
+		}
+	}
+
+	/* Faint star/dust field — a quiet nod to the space-western catalogue and the
+	   author's astronomy world. Parchment + amber points, amber-only, very low
+	   opacity so it never competes with content or text contrast. */
+	.atmo-stars {
+		position: absolute;
+		inset: 0;
+		background-image:
+			radial-gradient(1px 1px at 15% 22%, color-mix(in srgb, var(--color-text) 55%, transparent), transparent),
+			radial-gradient(1px 1px at 68% 14%, color-mix(in srgb, var(--color-accent) 60%, transparent), transparent),
+			radial-gradient(1px 1px at 42% 61%, color-mix(in srgb, var(--color-text) 40%, transparent), transparent),
+			radial-gradient(1.5px 1.5px at 83% 47%, color-mix(in srgb, var(--color-accent) 45%, transparent), transparent),
+			radial-gradient(1px 1px at 27% 82%, color-mix(in srgb, var(--color-text) 35%, transparent), transparent),
+			radial-gradient(1px 1px at 91% 78%, color-mix(in srgb, var(--color-text) 40%, transparent), transparent),
+			radial-gradient(1px 1px at 56% 33%, color-mix(in srgb, var(--color-accent) 40%, transparent), transparent);
+		opacity: 0.32;
+		animation: atmo-twinkle 9s ease-in-out infinite alternate;
+	}
+
+	@keyframes atmo-twinkle {
+		0% {
+			opacity: 0.24;
+		}
+		100% {
+			opacity: 0.4;
+		}
+	}
+
+	.atmo-embers {
+		position: absolute;
+		inset: 0;
+	}
+
+	.ember {
+		position: absolute;
+		left: var(--x);
+		bottom: -20px;
+		width: var(--size);
+		height: var(--size);
+		border-radius: 50%;
+		background: var(--color-accent-hover);
+		box-shadow: 0 0 6px 1px color-mix(in srgb, var(--color-accent) 60%, transparent);
+		opacity: 0;
+		animation: ember-rise var(--dur) linear infinite;
+		animation-delay: var(--delay);
+	}
+
+	@keyframes ember-rise {
+		0% {
+			transform: translate(0, 0) scale(0.6);
+			opacity: 0;
+		}
+		12% {
+			opacity: 0.55;
+		}
+		70% {
+			opacity: 0.4;
+		}
+		100% {
+			transform: translate(var(--drift), -100vh) scale(1);
+			opacity: 0;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.atmo-glow {
+			animation: none;
+			opacity: 0.7;
+			transform: translateX(-50%);
+		}
+		.atmo-stars {
+			animation: none;
+			opacity: 0.3;
+		}
+		.atmo-embers {
+			display: none;
+		}
+	}
+</style>

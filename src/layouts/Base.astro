@@ -1,0 +1,129 @@
+---
+import BaseHead from '../components/BaseHead.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import Atmosphere from '../components/Atmosphere.astro';
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+	title: string;
+	description: string;
+	image?: ImageMetadata | string;
+	imageAlt?: string;
+	type?: 'website' | 'article';
+	jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+}
+
+const { title, description, image, imageAlt, type, jsonLd } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead title={title} description={description} image={image} imageAlt={imageAlt} type={type} jsonLd={jsonLd} />
+	</head>
+	<body>
+		<script is:inline>
+			// Set before content parses so the reveal hidden-state only applies
+			// with JS (progressive enhancement) and there is no visible flash.
+			document.documentElement.classList.add('js');
+		</script>
+		<a class="skip-link" href="#main">Skip to content</a>
+		<Atmosphere />
+		<Header />
+		<main id="main">
+			<slot />
+		</main>
+		<Footer />
+
+		<style is:global>
+			/* Only hide when JS is present (progressive enhancement): if JS is
+			   disabled/fails, the .js class is never set and content stays visible. */
+			html.js .reveal {
+				opacity: 0;
+				transform: translateY(12px);
+				transition:
+					opacity 400ms ease,
+					transform 400ms ease;
+			}
+			html.js .reveal.is-revealed {
+				opacity: 1;
+				transform: none;
+			}
+
+			/* Stagger container: the block itself doesn't move — its .card
+			   children fade+rise in sequence ("dealing cards"). Uses an animation
+			   (not a transition) so it never clobbers the cards' hover transition.
+			   Per-card delay comes from an inline --reveal-delay. */
+			html.js .reveal--stagger {
+				opacity: 1;
+				transform: none;
+				transition: none;
+			}
+			html.js .reveal--stagger .card {
+				opacity: 0;
+			}
+			html.js .card-appear {
+				animation: reveal-rise 460ms ease var(--reveal-delay, 0ms) both;
+			}
+			@keyframes reveal-rise {
+				from {
+					opacity: 0;
+					transform: translateY(12px);
+				}
+				to {
+					opacity: 1;
+					transform: none;
+				}
+			}
+
+			@media (prefers-reduced-motion: reduce) {
+				html.js .reveal {
+					opacity: 1;
+					transform: none;
+					transition: none;
+				}
+				html.js .reveal--stagger .card {
+					opacity: 1;
+				}
+				html.js .card-appear {
+					animation: none;
+				}
+			}
+		</style>
+
+		<script>
+			const reveals = document.querySelectorAll('.reveal');
+			const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+			// Fan a stagger container's reveal out to its .card children.
+			const revealCards = (el: Element) => {
+				if (el.classList.contains('reveal--stagger')) {
+					el.querySelectorAll('.card').forEach((c) => c.classList.add('card-appear'));
+				}
+			};
+
+			if (reduce || !('IntersectionObserver' in window)) {
+				// Progressive enhancement: no IO / reduced motion → show everything.
+				reveals.forEach((el) => {
+					el.classList.add('is-revealed');
+					revealCards(el);
+				});
+			} else {
+				const observer = new IntersectionObserver(
+					(entries, obs) => {
+						entries.forEach((entry) => {
+							if (entry.isIntersecting) {
+								entry.target.classList.add('is-revealed');
+								revealCards(entry.target);
+								obs.unobserve(entry.target);
+							}
+						});
+					},
+					{ rootMargin: '0px 0px -10% 0px' },
+				);
+				reveals.forEach((el) => observer.observe(el));
+			}
+		</script>
+	</body>
+</html>

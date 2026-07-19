@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+    <!-- Stylized d20 (twenty-sided die) — brand mark for an RPG publisher -->
+    <g fill="none" stroke="#e0a458" stroke-width="6" stroke-linejoin="round" stroke-linecap="round">
+        <polygon points="64,10 112,38 112,90 64,118 16,90 16,38" stroke-linejoin="round" />
+        <polygon points="64,10 90,52 38,52" stroke-linejoin="round" />
+        <path d="M38 52 L16 38 M90 52 L112 38 M64 10 L64 24 M38 52 L26 92 M90 52 L102 92 M38 52 L64 74 L90 52 M64 74 L64 118 M26 92 L64 74 L102 92" stroke-linejoin="round" />
+    </g>
+</svg>

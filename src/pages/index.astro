@@ -1,0 +1,250 @@
+---
+import { getCollection } from 'astro:content';
+import { Image } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import BlogCard from '../components/BlogCard.astro';
+import { SITE_TITLE, SITE_DESCRIPTION, SITE_AUTHOR, EXTERNAL_LINKS } from '../consts';
+
+const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+const featured = projects.filter((p) => p.data.featured).slice(0, 3);
+
+const posts = (await getCollection('blog')).sort(
+	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+const latest = posts.slice(0, 3);
+
+const heroCover = featured[0]?.data.cover;
+const heroCoverTitle = featured[0]?.data.title;
+
+const jsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'Person',
+	name: SITE_AUTHOR,
+	url: 'https://www.lindseybonnetterpgpublishing.com',
+	jobTitle: 'Tabletop RPG Writer & Publisher',
+	sameAs: [EXTERNAL_LINKS.itch, EXTERNAL_LINKS.drivethru, EXTERNAL_LINKS.mastodon],
+};
+---
+
+<Base title={`${SITE_TITLE} — Indie Tabletop RPG Adventures`} description={SITE_DESCRIPTION} jsonLd={jsonLd}>
+	<section class:list={['hero container', { 'hero--split': heroCover }]}>
+		<div class="hero-copy">
+			<p class="eyebrow">Indie Tabletop RPG Publishing</p>
+			<h1 class="hero-title">Adventures for your table.</h1>
+			<p class="lead">
+				Dark fantasy, space western, mystery, and horror modules by {SITE_AUTHOR} — hand-written,
+				illustrated, and self-published for tabletop roleplayers.
+			</p>
+			<div class="hero-cta">
+				<a class="btn btn-primary" href="/projects">Browse the projects</a>
+				<a class="btn btn-secondary" href={EXTERNAL_LINKS.itch} target="_blank" rel="noopener">Shop on itch.io</a>
+			</div>
+		</div>
+		{
+			heroCover && (
+				<div class="hero-cover">
+					<Image
+						src={heroCover}
+						alt={`Cover art for ${heroCoverTitle}`}
+						widths={[320, 480, 640]}
+						sizes="(max-width: 900px) 60vw, 380px"
+						loading="eager"
+					/>
+				</div>
+			)
+		}
+	</section>
+
+	<section class="container section reveal reveal--stagger">
+		<div class="section-head emission-divider">
+			<h2>Featured adventures</h2>
+			<a class="see-all" href="/projects">All projects →</a>
+		</div>
+		<ul class="grid">
+			{
+				featured.map((p, i) => (
+					<ProjectCard
+						index={i}
+						href={`/projects/${p.id}`}
+						title={p.data.title}
+						tagline={p.data.tagline}
+						cover={p.data.cover}
+						tags={p.data.tags}
+						price={p.data.price}
+						itchUrl={p.data.itchUrl}
+						drivethruUrl={p.data.drivethruUrl}
+					/>
+				))
+			}
+		</ul>
+	</section>
+
+	<section class="container section reveal reveal--stagger">
+		<div class="section-head emission-divider">
+			<h2>From the blog</h2>
+			<a class="see-all" href="/blog">All posts →</a>
+		</div>
+		<ul class="blog-list">
+			{
+				latest.map((post, i) => (
+					<BlogCard
+						index={i}
+						href={`/blog/${post.id}`}
+						title={post.data.title}
+						pubDate={post.data.pubDate}
+						description={post.data.description}
+						heroImage={post.data.heroImage}
+					/>
+				))
+			}
+		</ul>
+	</section>
+</Base>
+
+<style>
+	.hero {
+		padding-top: var(--space-10);
+		padding-bottom: var(--space-10);
+	}
+	.hero-copy {
+		max-width: 640px;
+	}
+	.hero h1 {
+		font-size: var(--fs-display);
+		line-height: 1.05;
+		letter-spacing: -0.01em;
+		margin: var(--space-3) 0 var(--space-5);
+	}
+	/* One-pass amber sheen across the headline on load — like a reagent
+	   developing on paper. `.shimmer` is added by JS only when motion is allowed
+	   and background-clip:text is supported, so the text is never invisible. */
+	@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+		.hero-title.shimmer {
+			background-image: linear-gradient(
+				100deg,
+				var(--color-text) 0 42%,
+				var(--color-accent-hover) 50%,
+				var(--color-text) 58% 100%
+			);
+			/* The 300%-wide image fully covers the text box for any position in
+			   [0%,100%]; sweeping within that range keeps the text painted at all
+			   times (never transparent) while the amber band crosses once. */
+			background-size: 300% 100%;
+			background-position: 0% 0;
+			background-repeat: no-repeat;
+			-webkit-background-clip: text;
+			background-clip: text;
+			color: transparent;
+			animation: title-shimmer 1150ms ease-out forwards;
+		}
+	}
+	@keyframes title-shimmer {
+		from {
+			background-position: 0% 0;
+		}
+		to {
+			background-position: 100% 0;
+		}
+	}
+	.lead {
+		font-size: var(--fs-lead);
+		color: var(--color-text-muted);
+		max-width: 60ch;
+		margin-bottom: var(--space-6);
+	}
+	.hero-cta {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-4);
+	}
+	.hero-cover {
+		margin-top: var(--space-8);
+		justify-self: center;
+	}
+	.hero-cover :global(img) {
+		display: block;
+		width: 100%;
+		max-width: 320px;
+		height: auto;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-sm);
+		box-shadow:
+			0 18px 40px rgba(0, 0, 0, 0.55),
+			0 0 48px color-mix(in srgb, var(--color-accent) 18%, transparent);
+		will-change: transform;
+		animation: hero-float 7s ease-in-out infinite alternate;
+	}
+	@keyframes hero-float {
+		from {
+			transform: translateY(-6px);
+		}
+		to {
+			transform: translateY(6px);
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.hero-cover :global(img) {
+			animation: none;
+		}
+	}
+	@media (min-width: 900px) {
+		.hero--split {
+			display: grid;
+			grid-template-columns: minmax(0, 1fr) auto;
+			align-items: center;
+			gap: var(--space-10);
+		}
+		.hero--split .hero-cover {
+			margin-top: 0;
+		}
+		.hero--split .hero-cover :global(img) {
+			max-width: 360px;
+		}
+	}
+	.section {
+		padding-top: var(--space-10);
+	}
+	.section-head {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: var(--space-4);
+		margin-bottom: var(--space-6);
+		border-bottom: 1px solid var(--color-border);
+		padding-bottom: var(--space-4);
+	}
+	.section-head h2 {
+		margin: 0;
+	}
+	.see-all {
+		font-size: var(--fs-small);
+		font-weight: 500;
+		white-space: nowrap;
+	}
+	.grid {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+		gap: var(--space-6);
+	}
+	.blog-list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		border-top: 1px solid var(--color-border);
+	}
+</style>
+
+<script>
+	// Fire the one-pass headline shimmer only when motion is allowed and text
+	// clipping is supported — otherwise the heading stays solid parchment.
+	const title = document.querySelector('.hero-title');
+	const okMotion = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+	const okClip =
+		window.CSS?.supports('-webkit-background-clip', 'text') ||
+		window.CSS?.supports('background-clip', 'text');
+	if (title && okMotion && okClip) title.classList.add('shimmer');
+</script>

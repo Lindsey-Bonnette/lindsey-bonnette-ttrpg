@@ -1,0 +1,195 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import { getTagList } from '../../lib/tags';
+import { SITE_TITLE } from '../../consts';
+
+const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+const tagList = await getTagList();
+---
+
+<Base
+	title={`Projects — ${SITE_TITLE}`}
+	description="Tabletop RPG adventures, generators, and games by Lindsey Bonnette — dark fantasy, space western, mystery, and horror."
+>
+	<section class="container page-head">
+		<p class="eyebrow">The collection</p>
+		<h1>Projects</h1>
+		<p class="lead">
+			Every adventure, generator, and game I've written, illustrated, and published. Grab them on
+			itch.io or DriveThruRPG.
+		</p>
+	</section>
+
+	<section class="container reveal reveal--stagger">
+		<h2 class="sr-only">All projects</h2>
+
+		<nav class="filter emission-divider" data-tag-filter aria-label="Filter projects by tag">
+			<span class="filter-label">Filter</span>
+			<a class="tag filter-pill is-active" href="/projects" data-tag="" aria-current="true">All</a>
+			{
+				tagList.map((t) => (
+					<a class="tag filter-pill" href={`/projects?tag=${t.slug}`} data-tag={t.slug} rel="nofollow">
+						{t.label}
+					</a>
+				))
+			}
+		</nav>
+		<p class="filter-status sr-only" data-filter-live aria-live="polite" role="status"></p>
+
+		<ul class="grid" data-project-grid>
+			{
+				projects.map((p, i) => (
+					<ProjectCard
+						index={i}
+						href={`/projects/${p.id}`}
+						title={p.data.title}
+						tagline={p.data.tagline}
+						cover={p.data.cover}
+						tags={p.data.tags}
+						price={p.data.price}
+						itchUrl={p.data.itchUrl}
+						drivethruUrl={p.data.drivethruUrl}
+					/>
+				))
+			}
+		</ul>
+
+		<p class="filter-empty" data-filter-empty hidden>
+			No projects match that tag. <a href="/projects" data-filter-reset>Show all projects</a>.
+		</p>
+	</section>
+</Base>
+
+<style>
+	.page-head {
+		padding-top: var(--space-12);
+		padding-bottom: var(--space-8);
+		max-width: 760px;
+	}
+	.page-head h1 {
+		margin: var(--space-2) 0 var(--space-4);
+	}
+	.lead {
+		font-size: var(--fs-lead);
+		color: var(--color-text-muted);
+	}
+	.filter {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-2);
+		margin-bottom: var(--space-6);
+		padding-bottom: var(--space-5);
+		border-bottom: 1px solid var(--color-border);
+	}
+	.filter-label {
+		font-size: var(--fs-tiny);
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-text-faint);
+		margin-right: var(--space-2);
+	}
+	.grid {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+		gap: var(--space-6);
+	}
+	.filter-empty {
+		margin-top: var(--space-8);
+		color: var(--color-text-muted);
+		font-size: var(--fs-lead);
+	}
+</style>
+
+<script>
+	// Progressive enhancement: without JS, tag links navigate to
+	// /projects?tag=<slug> and this page still shows every project (the query is
+	// simply ignored by the static output). With JS, we filter in place, sync the
+	// URL via the History API, and keep back/forward working.
+	const grid = document.querySelector<HTMLElement>('[data-project-grid]');
+	const bar = document.querySelector<HTMLElement>('[data-tag-filter]');
+	const live = document.querySelector<HTMLElement>('[data-filter-live]');
+	const empty = document.querySelector<HTMLElement>('[data-filter-empty]');
+
+	if (grid && bar) {
+		const cards = Array.from(grid.querySelectorAll<HTMLElement>('.card[data-tags]'));
+		const pills = Array.from(bar.querySelectorAll<HTMLAnchorElement>('[data-tag]'));
+		const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+		const labelFor = (slug: string) =>
+			pills.find((p) => p.dataset.tag === slug)?.textContent?.trim() ?? slug;
+
+		function apply(slug: string | null, push = true) {
+			let visible = 0;
+			for (const card of cards) {
+				const match = !slug || (card.dataset.tags ?? '').split(' ').includes(slug);
+				card.hidden = !match;
+				if (match) {
+					visible++;
+					if (!reduce) {
+						// Re-fire the fade-in; no per-card stagger when filtering (snappy).
+						card.style.setProperty('--reveal-delay', '0ms');
+						card.classList.remove('card-appear');
+						void card.offsetWidth; // force reflow to restart the animation
+						card.classList.add('card-appear');
+					}
+				}
+			}
+
+			for (const p of pills) {
+				const active = (p.dataset.tag ?? '') === (slug ?? '');
+				p.classList.toggle('is-active', active);
+				if (active) p.setAttribute('aria-current', 'true');
+				else p.removeAttribute('aria-current');
+			}
+
+			if (empty) empty.hidden = visible > 0;
+			if (live) {
+				live.textContent = slug
+					? `${visible} project${visible === 1 ? '' : 's'} tagged ${labelFor(slug)}`
+					: `Showing all ${visible} projects`;
+			}
+
+			if (push) {
+				const url = slug ? `?tag=${encodeURIComponent(slug)}` : location.pathname;
+				history.pushState({ slug }, '', url);
+			}
+		}
+
+		// Filter-bar pills.
+		for (const p of pills) {
+			p.addEventListener('click', (e) => {
+				e.preventDefault();
+				apply(p.dataset.tag || null);
+			});
+		}
+
+		// Tag chips inside cards (and the empty-state reset link).
+		grid.addEventListener('click', (e) => {
+			const tag = (e.target as HTMLElement).closest<HTMLElement>('a.tag[data-tag]');
+			if (!tag) return;
+			e.preventDefault();
+			apply(tag.dataset.tag || null);
+			bar.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+		});
+		empty?.querySelector('[data-filter-reset]')?.addEventListener('click', (e) => {
+			e.preventDefault();
+			apply(null);
+		});
+
+		// Back/forward.
+		window.addEventListener('popstate', () => {
+			apply(new URLSearchParams(location.search).get('tag'), false);
+		});
+
+		// Honor an incoming ?tag= (e.g. arriving from a card elsewhere on the site).
+		const initial = new URLSearchParams(location.search).get('tag');
+		if (initial) apply(initial, false);
+	}
+</script>

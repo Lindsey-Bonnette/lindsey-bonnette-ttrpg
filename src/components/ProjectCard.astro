@@ -1,0 +1,260 @@
+---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import SocialIcon from './SocialIcon.astro';
+import TagGlyph from './TagGlyph.astro';
+import { resolveTags } from '../lib/tags';
+import { revealDelay } from '../lib/reveal';
+
+interface Props {
+	href: string;
+	title: string;
+	tagline?: string;
+	cover?: ImageMetadata;
+	tags?: string[];
+	price?: string;
+	itchUrl?: string;
+	drivethruUrl?: string;
+	/** Position in its grid — drives the staggered reveal delay. */
+	index?: number;
+}
+const { href, title, tagline, cover, tags = [], price, itchUrl, drivethruUrl, index = 0 } = Astro.props;
+
+// Canonical, de-duplicated tags. `dataTags` (all slugs) drives client-side
+// filtering on the projects index; the first three render as chips.
+const resolved = await resolveTags(tags);
+const dataTags = resolved.map((t) => t.slug).join(' ');
+// Cap the cascade so long grids don't feel laggy at the bottom.
+const reveal = revealDelay(index);
+---
+
+<li class="card" data-lamplight data-tags={dataTags} style={`--reveal-delay:${reveal}`}>
+	<div class="cover">
+		{
+			cover ? (
+				<Image src={cover} alt={`Cover art for ${title}`} widths={[280, 560]} sizes="(max-width: 640px) 100vw, 380px" />
+			) : (
+				<div class="cover-placeholder" aria-hidden="true" />
+			)
+		}
+	</div>
+	<div class="body">
+		{
+			resolved.length > 0 && (
+				<div class="tags">
+					{resolved.slice(0, 3).map((t) => (
+						<a class="tag" href={`/projects?tag=${t.slug}`} data-tag={t.slug} rel="nofollow">
+							<TagGlyph slug={t.slug} />
+							{t.label}
+						</a>
+					))}
+				</div>
+			)
+		}
+		<h3><a class="card-link" href={href}>{title}</a></h3>
+		{tagline && <p class="tagline">{tagline}</p>}
+	</div>
+	{
+		(price || itchUrl || drivethruUrl) && (
+			<div class="store">
+				{price && <span class="price">{price}</span>}
+				<div class:list={['store-links', { 'store-links--solo': !(itchUrl && drivethruUrl) }]}>
+					{itchUrl && (
+						<a
+							class="btn btn-primary store-btn"
+							href={itchUrl}
+							target="_blank"
+							rel="noopener"
+							aria-label={`${title} on itch.io`}
+						>
+							<SocialIcon name="itch" size={16} />
+							<span>itch.io</span>
+						</a>
+					)}
+					{drivethruUrl && (
+						<a
+							class="btn btn-secondary store-btn"
+							href={drivethruUrl}
+							target="_blank"
+							rel="noopener"
+							aria-label={`${title} on DriveThruRPG`}
+						>
+							<SocialIcon name="drivethru" size={16} />
+							<span>DriveThruRPG</span>
+						</a>
+					)}
+				</div>
+			</div>
+		)
+	}
+</li>
+
+<style>
+	.card {
+		position: relative;
+		isolation: isolate;
+		list-style: none;
+		display: flex;
+		flex-direction: column;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius);
+		overflow: hidden;
+		/* Faint lit top edge at rest, so the surface looks grazed by lamplight. */
+		box-shadow: inset 0 1px 0 color-mix(in srgb, var(--color-accent) 7%, transparent);
+		transition:
+			border-color var(--transition),
+			transform var(--transition),
+			box-shadow var(--transition);
+	}
+	.card[hidden] {
+		display: none;
+	}
+	/* Pointer-tracked lamplight — a soft amber glow that follows the cursor,
+	   sitting behind content (z-index:-1) and fading in only on hover. */
+	.card::before {
+		content: "";
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		background: radial-gradient(
+			260px circle at var(--mx, 50%) var(--my, 0%),
+			color-mix(in srgb, var(--color-accent) 13%, transparent),
+			transparent 60%
+		);
+		opacity: 0;
+		transition: opacity var(--transition);
+		pointer-events: none;
+	}
+	.card:hover::before,
+	.card:focus-within::before {
+		opacity: 1;
+	}
+	/* Keyboard parity: focusing into a card lights the same lamplight that a
+	   mouse hover does (pointer never set --my, so nudge it to a nice center). */
+	.card:focus-within {
+		--my: 32%;
+		border-color: var(--color-border-strong);
+	}
+	.card:hover {
+		border-color: var(--color-border-strong);
+		transform: translateY(-2px);
+		box-shadow:
+			inset 0 1px 0 color-mix(in srgb, var(--color-accent) 14%, transparent),
+			0 10px 28px rgba(0, 0, 0, 0.45),
+			0 0 0 1px color-mix(in srgb, var(--color-accent) 30%, transparent),
+			0 0 34px color-mix(in srgb, var(--color-accent) 14%, transparent);
+	}
+	.cover {
+		aspect-ratio: 3 / 4;
+		background: var(--color-surface);
+		border-bottom: 1px solid var(--color-border);
+		overflow: hidden;
+	}
+	.cover :global(img),
+	.cover-placeholder {
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
+		border-radius: 0;
+		transition: filter 300ms ease;
+	}
+	.card:hover .cover :global(img) {
+		filter: brightness(1.06) saturate(1.05);
+	}
+	.cover-placeholder {
+		background: var(--color-surface-2);
+	}
+	.body {
+		flex: 1;
+		padding: var(--space-5);
+	}
+	.tags {
+		position: relative;
+		z-index: 2;
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		margin-bottom: var(--space-3);
+	}
+	/* Title link is not positioned, so its ::after overlay stretches over the
+	   whole card (nearest positioned ancestor) — makes the card clickable while
+	   the tag/store links above (z-index:2) stay independently clickable. */
+	.card-link {
+		text-decoration: none;
+		color: inherit;
+	}
+	.card-link::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+	}
+	.card h3 {
+		margin: 0 0 var(--space-2);
+		color: var(--color-text-muted);
+		transition: color var(--transition);
+	}
+	.card:hover h3 {
+		color: var(--color-accent);
+	}
+	.tagline {
+		color: var(--color-text-muted);
+		font-size: var(--fs-small);
+		margin: 0;
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+	.store {
+		position: relative;
+		z-index: 2;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--space-4);
+		margin-top: auto;
+		padding: var(--space-4) var(--space-5) var(--space-5);
+		border-top: 1px solid var(--color-border);
+	}
+	.price {
+		font-size: var(--fs-tiny);
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--color-accent);
+		background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+		border: 1px solid color-mix(in srgb, var(--color-accent) 32%, transparent);
+		border-radius: 999px;
+		padding: 0.2rem 0.6rem;
+	}
+	.store-links {
+		display: flex;
+		gap: var(--space-3);
+		width: 100%;
+	}
+	.store-btn {
+		flex: 1;
+		justify-content: center;
+		padding: 0.5rem 0.875rem;
+	}
+	.store-links--solo .store-btn {
+		flex: 0 1 auto;
+	}
+</style>
+
+<script>
+	// Feed each card its cursor position so the ::before lamplight tracks the
+	// pointer. Skipped under reduced-motion (the glow just stays centered).
+	const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+	if (!reduce) {
+		document.querySelectorAll<HTMLElement>('.card[data-lamplight]').forEach((card) => {
+			card.addEventListener('pointermove', (e) => {
+				const r = card.getBoundingClientRect();
+				card.style.setProperty('--mx', `${((e.clientX - r.left) / r.width) * 100}%`);
+				card.style.setProperty('--my', `${((e.clientY - r.top) / r.height) * 100}%`);
+			});
+		});
+	}
+</script>
