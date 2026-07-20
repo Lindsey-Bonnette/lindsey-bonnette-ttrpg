@@ -9,7 +9,7 @@ heroImage: "../../assets/blog/how-i-plan-write-illustrate-and-publish-a-ttrpg-ad
 
 In this post I intend to go over my entire process for adventure writing. I'll use my latest adventure, [A Opossum's Hat](https://lbonnette.itch.io/a-opossums-hat), as an example. To the best of my ability I will put links to other articles I found helpful and give insight into what I personally do and use.
 
-The general idea of each step is on the navy background with each one separated by a line, and the example of A Opossum's Hat is on the light background.
+I start general and then go into specifics with A Opossum's Hat.
 
 **Disclaimer: This is just my process, your mileage may vary.**
 
@@ -23,9 +23,13 @@ What specifically needs to be fleshed out depends on your adventure. You want en
 
 In an adventure you want to give the characters something to do, something to act as an obstacle or threat, and some locations for all those actions to happen in.
 
+![image showing buttons in affinity publisher](../../assets/blog/writing_tut_1.png)
+
 For A Opossum's Hat I started with an image I made in Blender of a opossum magus. Initially the image was just for fun, but after finishing it, I really wanted to put my players into a game with this silly little opossum. So I started brainstorming the adventure in the program Obsidian. Using the Excalidraw plugin, I can doodle and write on a large canvas to collect everything into one space.
 
 In my brainstorming I made lists for things like, information about the antagonist (Miss Ophelia), possible encounters, hooks, maps, and even a sparse outline.
+
+![image showing buttons in affinity publisher](../../assets/blog/writing_tut_2.png)
 
 ## Outlining
 
@@ -125,6 +129,12 @@ My Affinity Publisher is the old version. The tutorials I used to learn it are o
 - Insert pdf bookmarks and organize them
 - Insert picture frames and art into those frames
 
+![image showing buttons in affinity publisher](../../assets/blog/writing_tut_3.png)
+![image showing buttons in affinity publisher](../../assets/blog/writing_tut_4.png)
+![image showing buttons in affinity publisher](../../assets/blog/writing_tut_5.png)
+![image showing buttons in affinity publisher](../../assets/blog/writing_tut_6.png)
+![image showing buttons in affinity publisher](../../assets/blog/writing_tut_7.png)
+
 For A Opossum's Hat I used DriveThruRPG's 5x8" POD template. For 5x8" layouts, I usually do a 1 column layout. For A4 sheets I usually do a 2 column layout. For A Opossum's Hat I didn't use the baseline grid, but I should have. The baseline grid really makes things look neater.
 
 I used a 10pt sans-serif body font (Karla Google Font) and a 12-20pt serif header font (Lora Google Font). The body text style is justified left while the headers are either centered or left aligned. Some headers are bolded, some are not. Some headers are all caps while others are mixed. Headers are truly up to taste so long as they give the reader some differentiation between the text's sections.
@@ -148,6 +158,8 @@ Photobashing takes photos and shoves them together to create something new. I ha
 I also make 3d art in the free program Blender. While Blender is very budget friendly, it has a large learning curve and steep time cost. Modeling and texturing a scene can take several hours, even once you know what you're doing. You can reuse models and scenes you've made, and the end results are very versatile. You can easily change the look of a scene using different materials or just changing the camera angle. There are less limitations for Blender. You can make pretty much anything, it just takes time. ["The Donut Tutorial"](https://www.youtube.com/playlist?list=PLjEaoINr3zgFX8ZsChQVQsuDSjEqdWMAD) is the classic Blender starter tutorial if you're interested. Using Blender, you can even get black and white, hand drawn looking images.
 
 You can also mix the two. Make some elements in Blender and mix them into a photobashed scene. With both of these, the computer does a lot of the work and they require less skill than something like painting or drawing.
+
+![image showing buttons in affinity publisher](../../assets/blog/writing_tut_8.png)
 
 For A Opossum's Hat, I used mostly Blender to generate the images. I edited some in Affinity to finish, but the bases were made with Blender.
 
