@@ -23,10 +23,7 @@ With all this in mind, I'm going to do a brief walkthrough of my process to crea
 
 To begin I made a brief overview of my most used tools in Affinity Photo. Note that others may have been used and this doesn't replace a good sit down with some affinity photo tutorials to figure out the interface.
 
-import { Image } from 'astro:assets';
-import Tut1 from '../assets/blog/tut_1.png';
-
-<Image src={Tut1} alt="image showing buttons in affinity publisher" />
+![image showing buttons in affinity publisher](../assets/blog/tut_1.png)
 
 To begin I grabbed my desired image dimensions from my pdf's publisher file. In this case that was 5.125 in by 2.919 in. I also adjusted the color format to match what DriveThruRPG requires for printing. Once all this info was in, I created the file.
 
